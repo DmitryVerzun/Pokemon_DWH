@@ -88,29 +88,27 @@ def _load_from_resources(url: str, key_template: str, **context) -> None:
 
     #index that will be used in file name if data is too big for one file
     index = 0
-    json_cache = []
+    json_string = ""
 
     # :50 is for testing purposes only!!!!
-    for number, resource in enumerate(resource_list[:50]):
+    for number, resource in enumerate(resource_list[:25]):
         data = _fetch_api(resource)
-        json_cache.append(data)
+        json_string = f"{json_string},\n{data}"
 
         # every n'th number i save to S3 to avoid overusing memory and empty the cache
         if (number+1) % BATCH_SIZE == 0:
-            data_dict = {"all_data": json_cache}
-            json_cache = []
             index += 1
             key = f"{key_template}{PROJECT_NAME}/{endpoint}_partition_{index}.json"
-            _load_string_on_s3(str(data_dict), key)
+            _load_string_on_s3(json_string, key)
+            json_string = ""
             #with open(f"./{endpoint}_partition_{index}.json", 'w', encoding='utf-8') as out_file:
             #    json.dump(data_dict, out_file, ensure_ascii=False)
 
     #loading the last (or the only) partition
-    data_dict = {"all_data": json_cache} 
     if index != 0:   
         index += 1
         key = f"{key_template}{PROJECT_NAME}/{endpoint}_partition_{index}.json"
-        _load_string_on_s3(str(data_dict), key)
+        _load_string_on_s3(json_string, key)
     else:
         key = f"{key_template}{PROJECT_NAME}/{endpoint}.json"
-        _load_string_on_s3(str(data_dict), key)
+        _load_string_on_s3(json_string, key)
