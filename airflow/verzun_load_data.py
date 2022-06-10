@@ -16,7 +16,7 @@ from airflow.utils.trigger_rule import TriggerRule
 from airflow.models import Variable
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
-from functions import *
+from verzun_functions import *
 
 with DAG(
     dag_id="verzun_load_data",
