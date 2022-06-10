@@ -16,7 +16,8 @@ from airflow.utils.trigger_rule import TriggerRule
 from airflow.models import Variable
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
-from verzun_functions import *
+from verzun_functions import (_start_message, _list_resources,
+                    _load_from_resources, _success_message, _failed_message)
 
 with DAG(
     dag_id="verzun_load_data",
@@ -51,13 +52,13 @@ with DAG(
         op_args=["https://pokeapi.co/api/v2/generation/", "{{var.value.snowpipe_files}}"]
     )
     success = PythonOperator(
-        task_id = 'success',
-        python_callable = _success_message
+        task_id='success',
+        python_callable=_success_message
         )
     failed = PythonOperator(
         task_id = 'failed',
-        python_callable = _failed_message,
-        trigger_rule = TriggerRule.ONE_FAILED
+        python_callable=_failed_message,
+        trigger_rule=TriggerRule.ONE_FAILED
         )
 
     start >> find_pokemon >> load_pokemon >> [success, failed]
