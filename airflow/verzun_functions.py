@@ -92,7 +92,7 @@ def _load_from_resources(url: str, key_template: str, **context) -> None:
         if (number+1) % BATCH_SIZE == 0:
             index += 1
             key = f"{key_template}{PROJECT_NAME}/{endpoint}_partition_{index}.json"
-            _load_string_on_s3(json_string, key)
+            _load_string_on_s3(json_string[1:], key)
             json_string = ""
             #with open(f"./{endpoint}_partition_{index}.json", 'w', encoding='utf-8') as out_file:
             #    json.dump(data_dict, out_file, ensure_ascii=False)
@@ -101,7 +101,7 @@ def _load_from_resources(url: str, key_template: str, **context) -> None:
     if index != 0:   
         index += 1
         key = f"{key_template}{PROJECT_NAME}/{endpoint}_partition_{index}.json"
-        _load_string_on_s3(json_string, key)
+        _load_string_on_s3(json_string[1:], key)
     else:
         key = f"{key_template}{PROJECT_NAME}/{endpoint}.json"
-        _load_string_on_s3(json_string, key)
+        _load_string_on_s3(json_string[1:], key)
