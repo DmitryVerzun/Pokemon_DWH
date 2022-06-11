@@ -1,9 +1,6 @@
 import requests
-import datetime
-import json
 from functools import wraps
 from time import sleep
-from io import StringIO
 from typing import Dict, Any
 
 from airflow import DAG

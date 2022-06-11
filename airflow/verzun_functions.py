@@ -1,19 +1,8 @@
 import requests
-import datetime
-import json
 from functools import wraps
 from time import sleep
-from io import StringIO
 from typing import Dict, Any
 
-from airflow import DAG
-from airflow.operators.dummy import DummyOperator
-from airflow.operators.bash_operator import BashOperator
-from airflow.operators.python import PythonOperator, BranchPythonOperator
-from airflow.utils.dates import days_ago
-from airflow.exceptions import AirflowException
-from airflow.utils.trigger_rule import TriggerRule
-from airflow.models import Variable
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 # project name used for naming and prefixes (my last name)
@@ -22,6 +11,9 @@ PROJECT_NAME = "Verzun"
 # maximum amount of API data loaded to memory before writing to file 
 # (not really sure it was a good idea)
 BATCH_SIZE = 100
+
+#list of fields we are interested in
+FIELD_LIST = ["types", "stats", "moves", "id", "name", "names", "types"]
 
 def _start_message() -> None:
     print(f"The DAG was launched!")
@@ -93,6 +85,7 @@ def _load_from_resources(url: str, key_template: str, **context) -> None:
     # :50 is for testing purposes only!!!!
     for number, resource in enumerate(resource_list[:25]):
         data = _fetch_api(resource)
+        data = {key: value for key, value in data.items() if key in FIELD_LIST}
         json_string = f"{json_string},\n{data}"
 
         # every n'th number i save to S3 to avoid overusing memory and empty the cache
