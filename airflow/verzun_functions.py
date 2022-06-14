@@ -13,7 +13,7 @@ PROJECT_NAME = "Verzun"
 BATCH_SIZE = 100
 
 #list of fields we are interested in
-FIELD_LIST = ["types", "stats", "moves", "id", "name", "names", "types"]
+FIELD_LIST = ["types", "stats", "moves", "id", "name", "names", "types", "pokemon_species"]
 
 def _start_message() -> None:
     print(f"The DAG was launched!")
@@ -83,7 +83,7 @@ def _load_from_resources(url: str, key_template: str, **context) -> None:
     json_string = ""
 
     # :50 is for testing purposes only!!!!
-    for number, resource in enumerate(resource_list[:25]):
+    for number, resource in enumerate(resource_list[:15]):
         data = _fetch_api(resource)
         data = {key: value for key, value in data.items() if key in FIELD_LIST}
         json_string = f"{json_string},\n{data}"
