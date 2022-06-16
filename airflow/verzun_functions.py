@@ -13,7 +13,7 @@ PROJECT_NAME = "Verzun"
 BATCH_SIZE = 100
 
 #list of fields we are interested in
-FIELD_LIST = ["types", "stats", "moves", "id", "name", "names", "types", "pokemon_species"]
+FIELD_LIST = ["types", "stats", "moves", "id", "name", "names", "types", "pokemon_species", "species"]
 
 def _start_message() -> None:
     print(f"The DAG was launched!")
