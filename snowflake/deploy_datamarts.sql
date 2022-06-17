@@ -11,12 +11,15 @@ order by sum(value) desc);
 
 -- need to name grand totals, don't forget
 create or replace view data_marts.generation_type_rating (generation, type, quantity) as
-(select p.generation, pt.type_name, count(p.id), 
- grouping_id(p.generation), grouping_id(pt.type_name)
+(select 
+ case when grouping_id(p.generation) = 1 then 'All generations' else p.generation end,
+ case when grouping_id(pt.type_name) = 1 then 'All types' else pt.type_name end,
+ count(p.id)
 from storage.pokemon p
 join storage.pokemon_type pt on pt.poke_id = p.id
 group by cube(p.generation, pt.type_name));
 
+select * from data_marts.generation_type_rating;
 
 create or replace view data_marts.move_statistics as
 (with move_stats as
