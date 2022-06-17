@@ -9,16 +9,18 @@ create table storage.pokemon(
     
 create table storage.pokemon_move(
     id integer primary key autoincrement,
+    move_id integer,
     poke_id int  references storage.pokemon(id),
     move_name varchar);
     
 create table storage.pokemon_type(
     id integer primary key autoincrement,
+    type_id integer,
     poke_id int references storage.pokemon(id),
     type_name varchar);
     
 create or replace table storage.stat(
-    id integer primary key autoincrement,
+    id integer primary key,
     stat_name varchar);
     
 create table storage.pokemon_stat(
@@ -30,7 +32,8 @@ create table storage.pokemon_stat(
 -- TASKS
 
 create or replace task staging.load_to_pokemon 
-warehouse = tasks_wh schedule = '5 minutes' as 
+warehouse = tasks_wh schedule = '5 minutes' 
+when system$stream_has_data('staging.stream_pokemon') as 
 insert into storage.pokemon(id, name, generation)
 (with pokemon as
     (select json_data:id as id,
@@ -58,32 +61,41 @@ left join generations g on g.id = gp.id);
 
 
 create or replace task staging.load_to_pokemon_move
-warehouse = tasks_wh schedule = '5 minutes' as 
-insert into storage.pokemon_move(poke_id, move_name)
-select json_data:id as poke_id,
+warehouse = tasks_wh schedule = '5 minutes' 
+when system$stream_has_data('staging.stream_pokemon_move') as 
+insert into storage.pokemon_move(move_id, poke_id, move_name)
+select 
+array_to_string(array_slice(split(value:move:url, '/'), -2, -1), '')::integer as id,
+json_data:id as poke_id,
 value:move:name as move_name
 from staging.stream_pokemon_move,
 lateral flatten(input => json_data:moves);
 
 
 create or replace task staging.load_to_pokemon_type
-warehouse = tasks_wh schedule = '5 minutes' as 
-insert into storage.pokemon_type(poke_id, type_name)
+warehouse = tasks_wh schedule = '5 minutes' 
+when system$stream_has_data('staging.stream_pokemon_type') as 
+insert into storage.pokemon_type(type_id, poke_id, type_name)
 select
+array_to_string(array_slice(split(value:type:url, '/'), -2, -1), '')::integer as id,
 json_data:id as id,
 value:type:name as type_name
 from staging.stream_pokemon_type,
 lateral flatten(input => json_data:types);
 
 create or replace task staging.load_to_stat
-warehouse = tasks_wh schedule = '5 minutes' as 
-insert into storage.stat(stat_name)
-select distinct value:stat:name  as stat_name
+warehouse = tasks_wh schedule = '5 minutes' 
+when system$stream_has_data('staging.stream_stat')as 
+insert into storage.stat(id, stat_name)
+select distinct 
+array_to_string(array_slice(split(value:stat:url, '/'), -2, -1), '')::integer as id,
+value:stat:name  as stat_name
 from staging.stream_stat,
 lateral flatten(input => json_data:stats);
 
 create or replace task staging.load_to_pokemon_stat
-warehouse = tasks_wh schedule = '5 minutes' as 
+warehouse = tasks_wh schedule = '5 minutes' 
+when system$stream_has_data('staging.stream_pokemon_stat') as 
 insert into storage.pokemon_stat(poke_id, stat_id, value)
 (with named_stat_facts as
 (select json_data:id as poke_id,
