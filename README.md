@@ -6,6 +6,8 @@ Data is fetched from Pokeapi and saved on AWS S3 bucket using Amazon Managed Wor
 Data is then loaded on Snowflake via snowpipe. Scripts for deploying the warehouse in Snowflake can be found in the snowflake/ folder
 ## Schema
 A snowflake schema was used to represent the data in the data warehouse. Below is the Storage schema. 
+![Snowflake Schema](https://i.ibb.co/Wgnpqjw/snowflake-schema-final-pages-to-jpg-0002.jpg)
+
 ## Data Marts
 There are 4 data marts representing different statistics.
 
@@ -13,10 +15,13 @@ a. The data_marts.type_statistics view represents a ranking of types by quantity
 ![Type Statistics](https://i.ibb.co/wR53Kxw/a.jpg)
 
 b. The data_marts.move_statistics view is similar to the previous one but presents a ranking of moves.
+![Move Statistics](https://i.ibb.co/ZSzS5Tw/b.jpg)
 
 c. Ranking of pokemon by sum of base stats can be found in the data_marts.pokemon_stat_rating view.
+![Strength Ranking](https://i.ibb.co/ZXYBH1R/c.jpg)
 
 d. The data_marts.generation_type_rating view shows the quantity of pokemon by each generation and type, as well as totals.
+![Generation and Type Statistics](https://i.ibb.co/M1g79Df/d.jpg)
 
 ## Potential issues
 1) Memory issues may appear if data gets too big. The \_load_from_resources function used to partition data authomatically but i removed this feature since it did not prove useful. 
