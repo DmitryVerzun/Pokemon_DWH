@@ -10,7 +10,7 @@ A snowflake schema was used to represent the data in the data warehouse. Below i
 There are 4 data marts representing different statistics.
 
 a. The data_marts.type_statistics view represents a ranking of types by quantity of pokemon belonging to each type.
-![Alt text](https://ibb.co/56bt5fn "Type Statistics")
+![Type Statistics](https://ibb.co/56bt5fn)
 
 b. The data_marts.move_statistics view is similar to the previous one but presents a ranking of moves.
 
