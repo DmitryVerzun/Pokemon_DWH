@@ -1,4 +1,6 @@
 import requests
+import threading
+from queue import Queue
 from functools import wraps
 from time import sleep
 from typing import Dict, Any
@@ -17,7 +19,7 @@ from verzun_functions import (_start_message, _list_resources,
                     _load_from_resources, _success_message, _failed_message)
 
 with DAG(
-    dag_id="verzun_load_data",
+    dag_id="dag_verzun_load_data",
     schedule_interval=None,
     start_date=days_ago(2),
     catchup=False,

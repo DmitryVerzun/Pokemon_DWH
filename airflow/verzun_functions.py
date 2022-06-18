@@ -1,4 +1,6 @@
 import requests
+import threading
+from queue import Queue
 from functools import wraps
 from time import sleep
 from typing import Dict, Any
@@ -43,13 +45,12 @@ def sleepy(sleep_time):
         return sleepy_wrapper
     return sleepy_decorator
 
-
 @sleepy(0.2)
 def _fetch_api(url: str) -> Dict[str, Any]:
     """
     Gets a json from a specified URL using python requests library.
     Sleeps for 0.2 seconds before each call to help PokeAPI creators stay within budget.
-    Used by most other functions because fetching requirements are similar.
+    This version just returns the full response as a json object.
     """
     try:
         result = requests.get(url).json()
@@ -58,6 +59,22 @@ def _fetch_api(url: str) -> Dict[str, Any]:
         return "Something wrong"
    
     return result
+
+@sleepy(0.2)
+def _fetch_api_threaded(url: str, result_queue) -> None:
+    """
+    Gets a json from a specified URL using python requests library.
+    Sleeps for 0.2 seconds before each call to help PokeAPI creators stay within budget.
+    This version puts filters data and puts in a Queue object for convenient threading.
+    """
+    try:
+        result = requests.get(url).json()
+    # don't forget to add exception handling later!
+    except Exception as e:
+        return "Something wrong"
+   
+    result = {key: value for key, value in result.items() if key in FIELD_LIST}
+    result_queue.put(str(result))
 
 
 def _list_resources(url: str, **context) -> None:
@@ -70,38 +87,49 @@ def _list_resources(url: str, **context) -> None:
     context.get("task_instance").xcom_push(key="resource_list", value=resource_list)
 
 
-def _load_from_resources(url: str, key_template: str, **context) -> None:
+def _load_from_resources(url: str, key_template: str, thread_number=2, **context) -> None:
     """
     Loads all data from given resources to a json file.
     If the number of resources exceeds 100 each 100 resources will be loaded to a separate partition.
+    Uses a customizable number of threads(default is 2)
     """
     endpoint = url.split("/")[-2]
     resource_list = context.get("task_instance").xcom_pull(task_ids=f"find_{endpoint}", key="resource_list")
 
     #index that will be used in file name if data is too big for one file
     index = 0
-    json_string = ""
+    #queue to dump results from all the threads
+    result_queue = Queue()
 
-    # :50 is for testing purposes only!!!!
-    for number, resource in enumerate(resource_list[:15]):
-        data = _fetch_api(resource)
-        data = {key: value for key, value in data.items() if key in FIELD_LIST}
-        json_string = f"{json_string},\n{data}"
+    # :15 is for testing purposes only!!!!
+    for number in range(0, len(resource_list[:20]), thread_number):
+        threads = []
+        for i in range(thread_number):
+            #skip if number of remaining resources is less than number of threads
+            if i > len(resource_list[:20]):
+                continue
+
+            threads.append(threading.Thread(target=_fetch_api_threaded, args=(resource_list[number+i],result_queue,)))
+            threads[i].start()
+
+        for thr in threads:
+            thr.join()
 
         # every n'th number i save to S3 to avoid overusing memory and empty the cache
-        if (number+1) % BATCH_SIZE == 0:
+        if (number+thread_number) % BATCH_SIZE == 0:
             index += 1
+            json_string = ",".join(list(result_queue.queue))
             key = f"{key_template}{PROJECT_NAME}/{endpoint}_partition_{index}.json"
-            _load_string_on_s3(json_string[1:], key)
+            _load_string_on_s3(json_string, key)
             json_string = ""
-            #with open(f"./{endpoint}_partition_{index}.json", 'w', encoding='utf-8') as out_file:
-            #    json.dump(data_dict, out_file, ensure_ascii=False)
+            result_queue = Queue()
 
     #loading the last (or the only) partition
+    json_string = ",".join(list(result_queue.queue))
     if index != 0:   
         index += 1
         key = f"{key_template}{PROJECT_NAME}/{endpoint}_partition_{index}.json"
-        _load_string_on_s3(json_string[1:], key)
+        _load_string_on_s3(json_string, key)
     else:
         key = f"{key_template}{PROJECT_NAME}/{endpoint}.json"
-        _load_string_on_s3(json_string[1:], key)
+        _load_string_on_s3(json_string, key)
