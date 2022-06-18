@@ -10,10 +10,6 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 # project name used for naming and prefixes (my last name)
 PROJECT_NAME = "Verzun"
 
-# maximum amount of API data loaded to memory before writing to file 
-# (not really sure it was a good idea)
-BATCH_SIZE = 100
-
 #list of fields we are interested in
 FIELD_LIST = ["types", "stats", "moves", "id", "name", "names", "types", "pokemon_species", "species"]
 
@@ -115,16 +111,7 @@ def _load_from_resources(url: str, key_template: str, thread_number=2, **context
         for thr in threads:
             thr.join()
 
-        # every n'th number i save to S3 to avoid overusing memory and empty the cache
-        if (number+thread_number) % BATCH_SIZE == 0:
-            index += 1
-            json_string = ",".join(list(result_queue.queue))
-            key = f"{key_template}{PROJECT_NAME}/{endpoint}_partition_{index}.json"
-            _load_string_on_s3(json_string, key)
-            json_string = ""
-            result_queue = Queue()
-
-    #loading the last (or the only) partition
+    #loading result to S3
     json_string = ",".join(list(result_queue.queue))
     if index != 0:   
         index += 1
