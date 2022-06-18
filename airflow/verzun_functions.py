@@ -102,11 +102,11 @@ def _load_from_resources(url: str, key_template: str, thread_number=2, **context
     result_queue = Queue()
 
     # :15 is for testing purposes only!!!!
-    for number in range(0, len(resource_list[:20]), thread_number):
+    for number in range(0, len(resource_list), thread_number):
         threads = []
         for i in range(thread_number):
             #skip if number of remaining resources is less than number of threads
-            if i > len(resource_list[:20]):
+            if i > len(resource_list):
                 continue
 
             threads.append(threading.Thread(target=_fetch_api_threaded, args=(resource_list[number+i],result_queue,)))
