@@ -209,3 +209,16 @@ def _check_generation(url:str, key_template: str, **context) -> None:
 
     _load_string_on_s3(logging_data + log_stream.getvalue(), key)
     
+
+def _cleanup(key_template: str) -> None:
+    """Deletes all files from working directory
+
+    Arguments:
+    key_template: adress of the target bucket given in snowpipe_files variable
+    """
+    s3hook = S3Hook()
+    bucket, prefix = S3Hook.parse_s3_url(key_template)
+    full_prefix = f"{prefix}{PROJECT_NAME}/"
+    
+    keys = s3hook.list_keys(bucket, prefix=full_prefix)
+    s3hook.delete_objects(bucket, keys)
