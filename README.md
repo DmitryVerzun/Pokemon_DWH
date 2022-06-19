@@ -35,5 +35,6 @@ d. The data_marts.generation_type_rating view shows the quantity of pokemon by e
 3) There is no checking for uniqueness currently implemented.
 4) Getting ids from url may become a problem if the API changes.
 5) Deltas in data marts are not always comprehensive when the delta is 0 (see datamart b).
-6) Cleanup DAG deletes the logging file too. When need arises, it can be modified to do regular cleanups rather than delete the working directory altogether but it is currently outside of the scope of the project.
+6) Cleanup DAG deletes the logging file too. It can be modified to do regular cleanups rather than delete the working directory altogether but it is currently outside of the scope of the project and not really needed.
 7) No notifications for logging.WARNING. They mostly require additional dependencies.
+8) Annoying tabs in logging.
