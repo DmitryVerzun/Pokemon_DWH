@@ -31,11 +31,11 @@ with DAG(
         op_args=["{{var.value.snowpipe_files}}"]
     )
     success = PythonOperator(
-        task_id = 'success',
+        task_id = "success",
         python_callable = _success_message
         )
     failed = PythonOperator(
-        task_id = 'failed',
+        task_id = "failed",
         python_callable = _failed_message,
         trigger_rule = TriggerRule.ONE_FAILED
         )
