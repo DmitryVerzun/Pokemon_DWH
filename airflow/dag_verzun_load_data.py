@@ -15,7 +15,7 @@ from airflow.utils.trigger_rule import TriggerRule
 from airflow.models import Variable
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
-from verzun_functions import (_start_message, _list_resources, _cleanup,
+from verzun_functions import (_start_message, _list_resources,
                     _load_from_resources, _success_message, _failed_message)
 
 with DAG(

@@ -19,12 +19,12 @@ from verzun_functions import (_start_message, _list_resources,
 
             
 with DAG(
-    dag_id="check_generations",
+    dag_id="dag_verzun_check_generations",
     schedule_interval="@daily",
     start_date=days_ago(2),
     catchup=False,
     max_active_runs=1,
-    tags=["de_school"]
+    tags=["de_school", "final_project"]
 ) as dag:
     start = PythonOperator(
         task_id="start",
@@ -33,12 +33,12 @@ with DAG(
     find_generation = PythonOperator(
         task_id="find_generation",
         python_callable=_list_resources,
-        op_args=["{{var.value.generation_url}}"]
+        op_args=["https://pokeapi.co/api/v2/generation/"]
     )
     check_generation = PythonOperator(
         task_id="check_generation",
         python_callable=_check_generation,
-        op_args=["{{var.value.generation_url}}", "{{var.value.snowpipe_files}}"]
+        op_args=["https://pokeapi.co/api/v2/generation/", "{{var.value.snowpipe_files}}"]
     )
     success = PythonOperator(
         task_id = 'success',
