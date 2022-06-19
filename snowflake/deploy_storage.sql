@@ -157,4 +157,5 @@ execute task staging.load_to_stat;
 
 -- This task depends on the stat table having data
 -- (i.e. completion of previous task)
+
 execute task staging.load_to_pokemon_stat;
