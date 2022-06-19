@@ -3,7 +3,7 @@ Data warehouse for loading, storing, and analyzing data obtained through Pokeapi
 ## Structure
 Data is fetched from Pokeapi and saved on AWS S3 bucket using Amazon Managed Workflows for Apache Airflow (MWAA). All nessecary code for that is stored in the airflow/ folder. There are two main DAGs that do most of the work - dag_verzun_load searches for all available esources for generations and pokemon in PokeAPI and loads them into a specified location on S3 bucket. dag_verzun_generations checks for number of generations every day (or whenever asked) and logs the changes (or the absence of such). dag_verzun_cleanup deletes all the files from the working directory and is supposed to be used for debugging.
 
-Data is then loaded on Snowflake via snowpipe. Scripts for deploying the warehouse in Snowflake can be found in the snowflake/ folder. Snowpipe automatically copies all data into 2 tables - stg_pokemon and stg_generations, from which data is loaded into the actual storage schema with the help of streams and tasks. Data marts are created as views based on the tables from the storage schema.
+Data is then loaded on Snowflake via snowpipe. Scripts for deploying the warehouse in Snowflake can be found in the snowflake/ folder. Snowpipe automatically copies all data into 2 tables - stg_pokemon and stg_generations (deploy_staging.sql), from which data is loaded into the actual storage schema with the help of streams and tasks. (deploy_storage.sql) Data marts are created as views based on the tables from the storage schema (deploy_datamarts.sql).
 
 ## Schema
 A snowflake schema was used to represent the data in the data warehouse. Below is the Storage schema:
