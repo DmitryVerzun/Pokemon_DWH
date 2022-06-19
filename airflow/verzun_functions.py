@@ -139,10 +139,13 @@ def _check_generation(url:str, key_template: str, **context) -> None:
     resource_list = context.get("task_instance").xcom_pull(task_ids=f"find_{endpoint}", key="resource_list")
     current_gen_quantity = len(resource_list)
 
-    #find the last log (if exists)
+    #find the last log (if exists), else give empty string
     s3hook = S3Hook()
     key = f"{key_template}{PROJECT_NAME}/logging.log"
-    logging_data = s3hook.read_key(key).split("\n")[-1]
+    if s3hook.check_for_key(key):
+        logging_data = s3hook.read_key(key).split("\n")[-1]
+    else:
+        logging_data = ""
 
     if context.get('dag_run').external_trigger:
         message = "Manual dag run. "
@@ -167,5 +170,5 @@ def _check_generation(url:str, key_template: str, **context) -> None:
             message += f"Number of generations increased \
                 from {previous} to {current_gen_quantity}"
             logger.warning(message)
-            
+
     _load_string_on_s3(log_stream.getvalue())
