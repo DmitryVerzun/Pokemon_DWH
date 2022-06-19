@@ -53,7 +53,7 @@ from
     select 
       $1 
     from 
-      @staging.SF / snowpipe / Verzun
+      @staging.SF/snowpipe/Verzun
   ) pattern = '.*generation.json' file_format = (
     type = 'JSON' strip_outer_array = true
   );
@@ -67,7 +67,7 @@ from
     select 
       $1 
     from 
-      @staging.SF / snowpipe / Verzun
+      @staging.SF/snowpipe/Verzun
   ) pattern = '.*pokemon.json' file_format = (
     type = 'JSON' strip_outer_array = true
   );
