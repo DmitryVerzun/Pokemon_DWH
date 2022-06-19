@@ -1,18 +1,7 @@
-import requests
-import logging
-from functools import wraps
-from time import sleep
-from typing import Dict, Any
-
 from airflow import DAG
-from airflow.operators.dummy import DummyOperator
-from airflow.operators.bash_operator import BashOperator
-from airflow.operators.python import PythonOperator, BranchPythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
-from airflow.exceptions import AirflowException
 from airflow.utils.trigger_rule import TriggerRule
-from airflow.models import Variable
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 from verzun_functions import (_start_message, _list_resources,
                     _check_generation, _success_message, _failed_message)
@@ -51,3 +40,4 @@ with DAG(
         )
     
     start >> find_generation >> check_generation >> [success, failed]
+    
