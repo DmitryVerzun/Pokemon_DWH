@@ -1,5 +1,7 @@
 import requests
 import threading
+import logging
+from io import StringIO
 from queue import Queue
 from functools import wraps
 from time import sleep
@@ -41,6 +43,7 @@ def sleepy(sleep_time):
         return sleepy_wrapper
     return sleepy_decorator
 
+
 @sleepy(0.2)
 def _fetch_api(url: str) -> Dict[str, Any]:
     """
@@ -55,6 +58,7 @@ def _fetch_api(url: str) -> Dict[str, Any]:
         return "Something wrong"
    
     return result
+
 
 @sleepy(0.2)
 def _fetch_api_threaded(url: str, result_queue) -> None:
@@ -92,12 +96,9 @@ def _load_from_resources(url: str, key_template: str, thread_number=2, **context
     endpoint = url.split("/")[-2]
     resource_list = context.get("task_instance").xcom_pull(task_ids=f"find_{endpoint}", key="resource_list")
 
-    #index that will be used in file name if data is too big for one file
-    index = 0
     #queue to dump results from all the threads
     result_queue = Queue()
 
-    # :15 is for testing purposes only!!!!
     for number in range(0, len(resource_list), thread_number):
         threads = []
         for i in range(thread_number):
@@ -113,10 +114,56 @@ def _load_from_resources(url: str, key_template: str, thread_number=2, **context
 
     #loading result to S3
     json_string = ",".join(list(result_queue.queue))
-    if index != 0:   
-        index += 1
-        key = f"{key_template}{PROJECT_NAME}/{endpoint}_partition_{index}.json"
-        _load_string_on_s3(json_string, key)
+    key = f"{key_template}{PROJECT_NAME}/{endpoint}.json"
+    _load_string_on_s3(json_string, key)
+
+
+def _check_generation(url:str, key_template: str, **context) -> None:
+    """
+    Gets the generation list from previous task. 
+    Keeps records of changes to the number of generations.
+    """
+    #start the logger and formatter
+    logger = logging.getLogger("generation_logger") 
+    formatter = logging.Formatter("%(asctime)s => %(levelname)s => %(message)s")
+
+    #add handler for S3
+    log_stream = StringIO() 
+    log_handler = logging.StreamHandler(log_stream)
+    logger.addHandler(log_handler)
+    log_handler.setFormatter(formatter)
+    logger.setLevel(logging.INFO)
+
+    #get current list of generations and count them
+    endpoint = url.split("/")[-2]
+    resource_list = context.get("task_instance").xcom_pull(task_ids=f"find_{endpoint}", key="resource_list")
+    current_gen_quantity = len(resource_list)
+
+    #find the last log (if exists)
+    s3hook = S3Hook()
+    key = f"{key_template}{PROJECT_NAME}/{endpoint}.json"
+    logging_data = s3hook.read_key(key).split("\n")[-1]
+
+    if context.get('dag_run').external_trigger:
+        message = "Manual dag run. "
     else:
-        key = f"{key_template}{PROJECT_NAME}/{endpoint}.json"
-        _load_string_on_s3(json_string, key)
+        message = "Scheduled dag run. "
+
+    #log the changes, info if nothing changed, warning if the number changed or this is the first log
+    if not logging_data:
+        message += f"First check. Current number of generations is {current_gen_quantity}"
+        logger.warning(message)
+    else:
+        previous = int(logging_data[-1].split())
+        if previous == current_gen_quantity:
+            message += f"Nothing changed since previous checkup. \
+                There number of generations is still {current_gen_quantity}"
+            logger.info(message)
+        elif previous > current_gen_quantity:
+            message += f"Number of generations dropped \
+                from {previous} to {current_gen_quantity}"
+            logger.warning(message)
+        elif previous < current_gen_quantity:
+            message += f"Number of generations increased \
+                from {previous} to {current_gen_quantity}"
+            logger.warning(message)
