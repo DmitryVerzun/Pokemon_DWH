@@ -148,9 +148,13 @@ or replace task staging.load_to_pokemon_stat warehouse = tasks_wh schedule = '5 
     join storage.stat s on s.stat_name = nsf.stat_name
 );
 
+
+-- Executing tasks manually
 execute task staging.load_to_pokemon;
 execute task staging.load_to_pokemon_move;
 execute task staging.load_to_pokemon_type;
 execute task staging.load_to_stat;
 
+-- This task depends on the stat table having data
+-- (i.e. completion of previous task)
 execute task staging.load_to_pokemon_stat;

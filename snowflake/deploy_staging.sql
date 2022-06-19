@@ -25,7 +25,6 @@ create
 or replace table staging.stg_pokemon(json_data variant);
 -- STREAMS 
 -- One stream called stream_{tablename} for each table
-
 create 
 or replace stream staging.stream_pokemon on table staging.stg_pokemon;
 
