@@ -23,11 +23,12 @@ c. Ranking of pokemon by sum of base stats can be found in the data_marts.pokemo
 d. The data_marts.generation_type_rating view shows the quantity of pokemon by each generation and type, as well as totals.
 ![Generation and Type Statistics](https://i.ibb.co/M1g79Df/d.jpg)
 
-## Potential issues
-1) Memory issues may appear if data gets too big. The \_load_from_resources function used to partition data authomatically but i removed this feature since it did not prove useful. 
-2) Task staging.load_to_pokemon_stat may not work correctly because it depends on previous task. However, this issue only appears when data is loaded for the first time since scratch unless new stat types are introduced. 
+## Potential issues and further improvements
+1) Memory issues may appear if data gets too big. The \_load_from_resources function used to partition data authomatically but I removed this feature since it did not prove useful. 
+2) The Snowflake task staging.load_to_pokemon_stat may not work correctly because it depends on the previous task being completed. However, this issue may only appear when data is loaded for the first time unless new stat types are introduced. 
 3) There is no checking for uniqueness currently implemented.
 4) Getting ids from url may become a problem if the API changes.
 5) New threads are created for each API request. This may be wasteful but didn't cause any problems.
-6) Deltas in data marts are not always comprehensive when difference is 0 (see datamart b).
-7) Too many whitespaces in logs?
+6) Deltas in data marts are not always comprehensive when the delta is 0 (see datamart b).
+7) No DAG for cleanup 
+8) No notifications for logging.WARNING. They mostly require additional dependencies.

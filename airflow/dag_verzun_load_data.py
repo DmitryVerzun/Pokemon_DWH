@@ -1,3 +1,5 @@
+"""DAG that fetches data from PokeAPI and loads it on S3"""
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago

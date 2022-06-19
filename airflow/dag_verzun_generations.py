@@ -1,3 +1,7 @@
+"""DAG that checks for changes in PokeAPI generation number daily.
+   Stores logs on S3
+"""
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
@@ -40,4 +44,3 @@ with DAG(
         )
     
     start >> find_generation >> check_generation >> [success, failed]
-    
