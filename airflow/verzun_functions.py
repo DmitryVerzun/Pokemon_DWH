@@ -143,24 +143,25 @@ def _check_generation(url:str, key_template: str, **context) -> None:
     s3hook = S3Hook()
     key = f"{key_template}{PROJECT_NAME}/logging.log"
     if s3hook.check_for_key(key):
-        logging_data = s3hook.read_key(key).split("\n")[-1]
+        logging_data = s3hook.read_key(key)
+    
     else:
         logging_data = ""
 
     if context.get('dag_run').external_trigger:
         message = "Manual dag run. "
     else:
-        message = "Scheduled dag run. "
+        message += "Scheduled dag run. "
 
     #log the changes, info if nothing changed, warning if the number changed or this is the first log
     if not logging_data:
         message += f"First check. Current number of generations is {current_gen_quantity}"
         logger.warning(message)
     else:
-        previous = int(logging_data[-1].split())
+        previous = int(logging_data.split()[-1])
         if previous == current_gen_quantity:
             message += f"Nothing changed since previous checkup. \
-                There number of generations is still {current_gen_quantity}"
+                The number of generations is still {current_gen_quantity}"
             logger.info(message)
         elif previous > current_gen_quantity:
             message += f"Number of generations dropped \
@@ -171,4 +172,4 @@ def _check_generation(url:str, key_template: str, **context) -> None:
                 from {previous} to {current_gen_quantity}"
             logger.warning(message)
 
-    _load_string_on_s3(log_stream.getvalue())
+    _load_string_on_s3(logging_data + log_stream.getvalue(), key)

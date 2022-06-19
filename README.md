@@ -30,3 +30,4 @@ d. The data_marts.generation_type_rating view shows the quantity of pokemon by e
 4) Getting ids from url may become a problem if the API changes.
 5) New threads are created for each API request. This may be wasteful but didn't cause any problems.
 6) Deltas in data marts are not always comprehensive when difference is 0 (see datamart b).
+7) Too many whitespaces in logs?
