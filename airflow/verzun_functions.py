@@ -182,7 +182,7 @@ def _check_generation(url:str, key_template: str, **context) -> None:
     else:
         logging_data = ""
 
-    if context.get('dag_run').external_trigger:
+    if context.get("dag_run").external_trigger:
         message = "Manual dag run. "
     else:
         message += "Scheduled dag run. "
