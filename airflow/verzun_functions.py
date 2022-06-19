@@ -141,7 +141,7 @@ def _check_generation(url:str, key_template: str, **context) -> None:
 
     #find the last log (if exists)
     s3hook = S3Hook()
-    key = f"{key_template}{PROJECT_NAME}/{endpoint}.json"
+    key = f"{key_template}{PROJECT_NAME}/logging.log"
     logging_data = s3hook.read_key(key).split("\n")[-1]
 
     if context.get('dag_run').external_trigger:
@@ -167,3 +167,5 @@ def _check_generation(url:str, key_template: str, **context) -> None:
             message += f"Number of generations increased \
                 from {previous} to {current_gen_quantity}"
             logger.warning(message)
+            
+    _load_string_on_s3(log_stream.getvalue())
