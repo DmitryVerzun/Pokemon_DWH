@@ -68,11 +68,7 @@ def _fetch_api(url: str) -> Dict[str, Any]:
     
     Sleeps for 0.2 seconds before each request to limit request frequency.
     """
-    try:
-        result = requests.get(url).json()
-    # don't forget to add exception handling later!
-    except Exception as e:
-        return "Something wrong"
+    result = requests.get(url).json()
    
     return result
 
@@ -90,12 +86,8 @@ def _fetch_api_threaded(url: str, result_queue: Queue) -> None:
     Sleeps for 0.2 seconds before each request to limit request frequency.
     Filters data and puts it in a Queue object for convenient threading.
     """
-    try:
-        result = requests.get(url).json()
-    # don't forget to add exception handling later!
-    except Exception as e:
-        return "Something wrong"
-   
+    result = requests.get(url).json()
+    
     result = {key: value for key, value in result.items() if key in FIELD_LIST}
     result_queue.put(str(result))
 
