@@ -15,11 +15,11 @@ There are 4 data marts representing different statistics according to the specif
 
 a. The data_marts.type_statistics view represents a ranking of types by quantity of pokemon belonging to each type:
 
-![Type Statistics](https://i.ibb.co/wR53Kxw/a.jpg)
+![Type Statistics](https://i.ibb.co/y0K2XsG/new-a.jpg)
 
 b. The data_marts.move_statistics view is similar to the previous one but presents a ranking of moves:
 
-![Move Statistics](https://i.ibb.co/ZSzS5Tw/b.jpg)
+![Move Statistics](https://i.ibb.co/9ZGW72V/new-b.jpg)
 
 c. Ranking of pokemon by sum of base stats can be found in the data_marts.pokemon_stat_rating view:
 
@@ -34,7 +34,6 @@ d. The data_marts.generation_type_rating view shows the quantity of pokemon by e
 2) The Snowflake task staging.load_to_pokemon_stat may not work correctly because it depends on the previous task being completed. However, this issue may only appear when data is loaded for the first time unless new stat types are introduced. 
 3) There is no checking for uniqueness currently implemented.
 4) Getting ids from url may become a problem if the API changes.
-5) Deltas in data marts are not always comprehensive when the delta is 0 (see datamart b).
-6) Cleanup DAG deletes the logging file too. It can be modified to do regular cleanups rather than delete the working directory altogether but it is currently outside of the scope of the project and not really needed.
-7) No notifications for logging.WARNING. They mostly require additional dependencies.
-8) Annoying tabs in logging.
+5) Cleanup DAG deletes the logging file too. It can be modified to do regular cleanups rather than delete the working directory altogether but it is currently outside of the scope of the project and not really needed.
+6) No notifications for logging.WARNING. They mostly require additional dependencies.
+7) Annoying tabs in logging.
