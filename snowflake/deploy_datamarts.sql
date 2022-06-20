@@ -14,7 +14,8 @@ or replace view data_marts.type_statistics as (
       ) as previous, 
       lag(pokemon_count, -1) over(
         order by 
-          pokemon_count desc
+          pokemon_count desc, 
+          type_name
       ) as next 
     from 
       storage.pokemon p 
@@ -22,17 +23,19 @@ or replace view data_marts.type_statistics as (
     group by 
       pt.type_name 
     order by 
-      pokemon_count desc
+      pokemon_count desc, 
+      type_name
   ) 
   select 
     type_name, 
     pokemon_count, 
-    (previous - pokemon_count) as change_from_next_higher, 
-    (pokemon_count - next) as change_from_next_lower 
+    case when (previous - pokemon_count) is null then 0 else (previous - pokemon_count) end as change_from_next_higher, 
+    case when (pokemon_count - next) is null then 0 else (pokemon_count - next) end as change_from_next_lower 
   from 
     type_stats 
   order by 
-    pokemon_count desc
+    pokemon_count desc, 
+    type_name
 );
 
 -- Task 1.b
@@ -44,11 +47,13 @@ or replace view data_marts.move_statistics as (
       count(p.id) as pokemon_count, 
       lag(pokemon_count, 1) over(
         order by 
-          pokemon_count desc
+          pokemon_count desc, 
+          move_name
       ) as previous, 
       lag(pokemon_count, -1) over(
         order by 
-          pokemon_count desc
+          pokemon_count desc, 
+          move_name
       ) as next 
     from 
       storage.pokemon p 
@@ -56,17 +61,21 @@ or replace view data_marts.move_statistics as (
     group by 
       pm.move_name 
     order by 
-      pokemon_count desc
+      pokemon_count desc, 
+      move_name
   ) 
   select 
     move_name, 
     pokemon_count, 
-    (previous - pokemon_count) as change_from_next_higher, 
-    (pokemon_count - next) as change_from_next_lower 
+    case when (previous - pokemon_count) is null then 0 
+      else (previous - pokemon_count) end as change_from_next_higher, 
+    case when (pokemon_count - next) is null then 0 
+      else (pokemon_count - next) end as change_from_next_lower 
   from 
     move_stats 
   order by 
-    pokemon_count desc
+    pokemon_count desc, 
+    move_name
 );
 
 -- Task 1.c
